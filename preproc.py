@@ -203,10 +203,11 @@ class Dataset(object):
 
 
 class Dataset2(object):
-    def __init__(self, data: pd.DataFrame, is_test=False) -> None:
+    def __init__(self, data: pd.DataFrame, is_test=False, mean = {}) -> None:
         # drop columns
-        self.mean = {}
-        self.mode = 0
+        self.mean=mean
+        if is_test:
+            self.mean = mean
         self.data = data.copy()
         self.is_test = is_test
 
@@ -220,7 +221,7 @@ class Dataset2(object):
         self.data = self.data.drop('bloodchem4', axis=1)
         self.data = self.data.drop('urine',axis =1)
         self.data = self.data.drop('income',axis =1)
-        self.data = self.data.drop('disability', axis = 1)
+        self.data = self.data.drop('disability',axis =1)
 
         # clean data
         self.data = self.data.apply(self.clean, axis=1)
@@ -236,7 +237,6 @@ class Dataset2(object):
         self.clean_fill_mean('cost')
         self.clean_fill_mean('sleep')
         self.clean_fill_mean('bloodchem5')
-#         self.replace_missing_with_mode('disability')
         self.clean_fill_mean('administratorcost')
         self.clean_fill_mean('diabetes')
         self.clean_fill_mean('bloodchem6')
@@ -251,7 +251,6 @@ class Dataset2(object):
         self.one_hot_encode_feature('extraprimary')
         self.one_hot_encode_feature('dnr')
         self.one_hot_encode_feature('primary')
-        self.one_hot_encode_feature('disability')
         
 #         joblib.dump(self.knn_imputers, "knn_imputers.pk1")
 

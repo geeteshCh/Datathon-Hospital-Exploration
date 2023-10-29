@@ -3,81 +3,49 @@ from flask import Flask, jsonify, request
 import tensorflow as tf
 import pandas as pd
 import random
-from preproc import Dataset
+from preproc import Dataset2
+import numpy as np
+from keras.models import load_model
 
 app = Flask(__name__)
+
+
+ds = Dataset2(pd.read_csv('./TD_HOSPITAL_TRAIN.csv'))
+print(ds.data.shape)
+print(ds.mean)
+mean = ds.mean
 
 
 class Solution:
     def __init__(self):
         #Initialize any global variables here
-        self.model = tf.keras.models.load_model('example.h5')
+        self.model = load_model('example_basic.h5')
+        print(self.model.summary())
 
-    def calculate_death_prob(self, timeknown, cost, reflex, sex, blood, bloodchem1, bloodchem2, temperature, race,
-                             heart, psych1, glucose, psych2, dose, psych3, bp, bloodchem3, confidence, bloodchem4,
-                             comorbidity, totalcost, breathing, age, sleep, dnr, bloodchem5, pdeath, meals, pain,
-                             primary, psych4, disability, administratorcost, urine, diabetes, income, extraprimary,
-                             bloodchem6, education, psych5, psych6, information, cancer):
+    def calculate_death_prob(self, data_old):
         
         """
         This function should return your final prediction!
         """
-        labels = [
-            'timeknown', 
-            'cost', 
-            'reflex',	
-            'sex',	
-            'blood',	
-            'bloodchem1',	
-            'bloodchem2',
-            'temperature',		
-            'race',	
-            'heart',	
-            'psych1',	
-            'glucose',	
-            'psych2',	
-            'dose',	
-            'psych3',	
-            'bp',	
-            'bloodchem3',
-            'confidence',
-            'bloodchem4',
-            comorbidity,
-            totalcost,
-            breathing,
-            age	
-            sleep
-            dnr
-            bloodchem5
-            pdeath	
-            meals	
-            pain	
-            primary	
-            psych4	
-            disability	
-            administratorcost	
-            urine	
-            diabetes	
-            income	
-            extraprimary	
-            bloodchem6	
-            education	
-            psych5	
-            psych6	
-            information	
-            cancer    
-        ]
+        
+        data = dict()
+        for k, v in data_old.items():
+            if v in ['nan', '']:
+                data[k] = [np.nan]
+            elif v[0].isdigit():
+                data[k] = [float(v)]
+            else:
+                data[k] = [v]
+
+        df = Dataset2(pd.DataFrame(data), True, mean).data
+
+        print(df)
+
+        print(df.shape)
 
 
-        labels = ['age', 'blood', 'reflex', 'bloodchem1', 'bloodchem2', 'psych1', 'glucose']
-        values = [float(x) for x in [age, blood, reflex, bloodchem1, bloodchem2, psych1, glucose]]
-        df = dict()
-        for label, value in zip(labels, values):
-            df[label] = [value]
-        df = pd.DataFrame(df)
-        df.replace('', 0, inplace=True)
-        df.fillna(0, inplace=True)
         prediction = self.model.predict(df.to_numpy())
+        
         return float(prediction[0][0])
 
 
@@ -87,18 +55,11 @@ def q1():
     solution = Solution()
     data = request.get_json()
     return {
-        "probability": solution.calculate_death_prob(data['timeknown'], data['cost'], data['reflex'], data['sex'], data['blood'],
-                                            data['bloodchem1'], data['bloodchem2'], data['temperature'], data['race'],
-                                            data['heart'], data['psych1'], data['glucose'], data['psych2'],
-                                            data['dose'], data['psych3'], data['bp'], data['bloodchem3'],
-                                            data['confidence'], data['bloodchem4'], data['comorbidity'],
-                                            data['totalcost'], data['breathing'], data['age'], data['sleep'],
-                                            data['dnr'], data['bloodchem5'], data['pdeath'], data['meals'],
-                                            data['pain'], data['primary'], data['psych4'], data['disability'],
-                                            data['administratorcost'], data['urine'], data['diabetes'], data['income'],
-                                            data['extraprimary'], data['bloodchem6'], data['education'], data['psych5'],
-                                            data['psych6'], data['information'], data['cancer'])}
+        "probability": solution.calculate_death_prob(data)}
 
 
 if __name__ == "__main__":
+    
+
+
     app.run(host="0.0.0.0", port=5555)

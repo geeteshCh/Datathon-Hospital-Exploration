@@ -203,11 +203,15 @@ class Dataset(object):
 
 
 class Dataset2(object):
-    def __init__(self, data: pd.DataFrame) -> None:
+    def __init__(self, data: pd.DataFrame, is_test=False) -> None:
         # drop columns
         self.mean = {}
         self.mode = 0
         self.data = data.copy()
+        self.is_test = is_test
+
+        if self.is_test:
+            self.data[self.data == 'nan'] = np.nan
 
         # drop columns
         self.data = self.data.drop('pdeath',axis=1)
@@ -345,9 +349,12 @@ class Dataset2(object):
 
     # for glucose, psych2, 
     def clean_fill_mean(self, feature):
-        mean_value = self.data[feature].mean()
-        self.mean[feature] = mean_value
-        self.data[feature].fillna(mean_value, inplace=True)
+        if self.is_test:
+            self.data[feature].fillna(self.mean[feature], inplace=True)
+        else:
+            mean_value = self.data[feature].mean()
+            self.mean[feature] = mean_value
+            self.data[feature].fillna(mean_value, inplace=True)
 
 
     # replacing the outliers after replacing missing values
@@ -397,12 +404,15 @@ class Dataset2(object):
         Returns:
         - Updated DataFrame with missing values filled in the specified feature.
         """
-        # Find the most frequent category in the specified feature
-        most_frequent_category = self.data[categorical_feature].mode()[0]
-        self.mode = most_frequent_category
+        if self.is_test:
+            self.data[categorical_feature].fillna(self.mode, inplace=True)
+        else:
+            # Find the most frequent category in the specified feature
+            most_frequent_category = self.data[categorical_feature].mode()[0]
+            self.mode = most_frequent_category
         
-        # Fill missing values in the specified feature with the most frequent category
-        self.data[categorical_feature].fillna(most_frequent_category, inplace=True)
+            # Fill missing values in the specified feature with the most frequent category
+            self.data[categorical_feature].fillna(most_frequent_category, inplace=True)
         
     # Example Usage:
     # Assuming 'df' is your DataFrame and 'categorical_column' is the name of the categorical feature with missing values

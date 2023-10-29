@@ -3,6 +3,7 @@ from flask import Flask, jsonify, request
 import tensorflow as tf
 import pandas as pd
 import random
+from preproc import Dataset
 
 app = Flask(__name__)
 
@@ -21,6 +22,53 @@ class Solution:
         """
         This function should return your final prediction!
         """
+        labels = [
+            'timeknown', 
+            'cost', 
+            'reflex',	
+            'sex',	
+            'blood',	
+            'bloodchem1',	
+            'bloodchem2',
+            'temperature',		
+            'race',	
+            'heart',	
+            'psych1',	
+            'glucose',	
+            'psych2',	
+            'dose',	
+            'psych3',	
+            'bp',	
+            'bloodchem3',
+            'confidence',
+            'bloodchem4',
+            comorbidity,
+            totalcost,
+            breathing,
+            age	
+            sleep
+            dnr
+            bloodchem5
+            pdeath	
+            meals	
+            pain	
+            primary	
+            psych4	
+            disability	
+            administratorcost	
+            urine	
+            diabetes	
+            income	
+            extraprimary	
+            bloodchem6	
+            education	
+            psych5	
+            psych6	
+            information	
+            cancer    
+        ]
+
+
         labels = ['age', 'blood', 'reflex', 'bloodchem1', 'bloodchem2', 'psych1', 'glucose']
         values = [float(x) for x in [age, blood, reflex, bloodchem1, bloodchem2, psych1, glucose]]
         df = dict()
